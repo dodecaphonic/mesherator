@@ -25,8 +25,18 @@
     this.mesh = null;
   };
 
-  Mesherator.prototype.setViewWireframe = function(viewWireframe) {
-    this.viewWireframe = viewWireframe;
+  Mesherator.prototype.showSpinner = function() {
+    var target = $('#spinner')[0];
+    
+    if (!this.spinner) {
+      this.spinner = new Spinner().spin(target);
+    } else {
+      this.spinner.spin(target);
+    }
+  };
+
+  Mesherator.prototype.hideSpinner = function() {
+    this.spinner.stop();
   };
 
   Mesherator.prototype.setup = function() {
@@ -116,11 +126,16 @@
 
   Mesherator.prototype.triangulateCurrentPointSet = function(slowOrFast) {
     var callback = __bind(this.showTriangulation, this);
+    var promise;
+    this.showSpinner();
+    
     if (slowOrFast == 'slow') {
-      jQuery.post('/triangulate/slow', { points: this.points }).success(callback);
+      promise = jQuery.post('/triangulate/slow', { points: this.points });
     } else {
-      jQuery.post('/triangulate/fast', { points: this.points }).success(callback);
+      promise = jQuery.post('/triangulate/fast', { points: this.points });
     }
+
+    promise.success(callback).done(__bind(this.hideSpinner, this));
   };
 
   Mesherator.prototype.render = function() {
