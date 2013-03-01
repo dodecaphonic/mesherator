@@ -54,7 +54,7 @@ module Mesherator
         input[:numberofpoints] = points.size
         input[:numberofpointattributes] = 0
 
-        FFI.triangulate 'czeXQ', input, output, nil
+        TriangleFFI.triangulate 'czeXQ', input, output, nil
 
         triangles = read_triangles(output)
         triangles

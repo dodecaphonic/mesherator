@@ -1,8 +1,11 @@
-require 'bundler/setup'
 require 'sinatra'
 require 'json'
 
 require_relative 'lib/mesherator'
+
+if Rack::Utils.respond_to?("key_space_limit=")
+  Rack::Utils.key_space_limit = 262144
+end
 
 POINTS = {
   small: [],
@@ -59,6 +62,16 @@ get '/large/points' do
   POINTS[:large].map { |p| vector3_to_hash(p) }.to_json
 end
 
+post '/triangulate/:fast_or_slow' do
+  content_type :json
+
+  if params[:fast_or_slow] == 'slow'
+    triangulate(json_to_vector3_list(params[:points]))
+  else
+    triangulate_ffi(json_to_vector3_list(params[:points]))
+  end
+end
+
 get '/large/triangulate' do
   content_type :json
   triangulate(POINTS[:large])
@@ -89,8 +102,12 @@ def triangulate(points)
 end
 
 def triangulate_ffi(points)
-  triangulator = Mesherator::FFI::DelaunayTriangulator.new(points)
+  triangulator = Mesherator::TriangleFFI::DelaunayTriangulator.new(points)
   triangulator.triangulate.map { |triangle|
     triangle_to_array_of_vector3_hashes(triangle)
   }.to_json
+end
+
+def json_to_vector3_list(points)
+  points.values.map { |p| Mesherator::Vector3.new(p['x'].to_f, p['y'].to_f, p['z'].to_f) }
 end

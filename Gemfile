@@ -2,6 +2,12 @@ source 'http://rubygems.org'
 
 gem 'ffi'
 gem 'sinatra'
+gem 'puma'
+
+group :development do
+  gem 'foreman'
+  gem 'pry'
+end
 
 group :test do
   gem 'guard'
