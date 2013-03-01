@@ -7,6 +7,9 @@
   };
 
   Mesherator = function() {
+    this.viewWireframe = true;
+    this.currentTriangulationMethod = 'slow';
+    
     this.scene  = new THREE.Scene();
     this.camera = new THREE.CombinedCamera(window.innerWidth,
                                            window.innerHeight,
@@ -15,17 +18,61 @@
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.camera.up = new THREE.Vector3(0, 0, 1);
+    this.ambientLight = new THREE.AmbientLight(Math.random() * 0x10);
+    this.scene.add(this.ambientLight);
+
+    this.particleSystem = null;
+    this.mesh = null;
+  };
+
+  Mesherator.prototype.setViewWireframe = function(viewWireframe) {
+    this.viewWireframe = viewWireframe;
   };
 
   Mesherator.prototype.setup = function() {
     $('#mesherator').append(this.renderer.domElement);
-    this.loadPointSet('small');
+    this.setupInputEvents();
+    this.loadPointSet();
   };
 
-  Mesherator.prototype.loadPointSet = function(pointSet) {
-    this.generateRandomPointSet();
+  Mesherator.prototype.setupInputEvents = function() {
+    var that = this;
+    $('#show-wireframe').on('click', function() {
+      that.viewWireframe = $(this).is(':checked');
+
+      if (that.mesh) {
+        that.mesh.material.wireframe = that.viewWireframe;
+      }
+    });
+
+    $('#controls input[name="method"]').on('change', function() {
+      that.currentTriangulationMethod = $(this).val();
+      that.removeCurrentTriangulation();
+      that.triangulateCurrentPointSet(that.currentTriangulationMethod);
+    });
+
+    $('#point-number').on('keydown', function(event) {
+      var numberOfPoints = $(this).val();
+      
+      if (event.keyCode == 13) {
+        that.scene.remove(that.mesh);
+        that.scene.remove(that.particleSystem);
+        that.loadPointSet(numberOfPoints);        
+      }
+    });
+  };
+
+  Mesherator.prototype.removeCurrentTriangulation = function() {
+    if (this.mesh) {
+      this.scene.remove(this.mesh);
+    }
+  };
+  
+  Mesherator.prototype.loadPointSet = function(numberOfPoints) {
+    numberOfPoints = numberOfPoints || 5000;
+    this.generateRandomPointSet(numberOfPoints);
     this.showCurrentPointSet();
-    this.triangulateCurrentPointSet('slow');
+    this.triangulateCurrentPointSet(this.currentTriangulationMethod);
   };
 
   Mesherator.prototype.generateRandomPointSet = function(numberOfPoints) {
@@ -38,7 +85,7 @@
     for (pointIndex = 0; pointIndex < numberOfPoints; pointIndex++) {
       x = Math.random() * window.innerWidth;
       y = Math.random() * window.innerHeight;
-      z = Math.random() * 10;
+      z = Math.random() * 30;
 
       this.points.push({ x: x, y: y, z: z });
       this.vectors.push(new THREE.Vector3(x, y, z));
@@ -47,7 +94,7 @@
 
   Mesherator.prototype.showCurrentPointSet = function() {
     var pointIndex, point;
-    var material, particleSystem, boundingBox;
+    var material, boundingBox;
 
     var geometry = new THREE.Geometry();
     geometry.vertices = this.vectors;
@@ -59,10 +106,10 @@
       transparent: false
     });
 
-    particleSystem = new THREE.ParticleSystem(geometry, material);
+    this.particleSystem = new THREE.ParticleSystem(geometry, material);
     geometry.computeBoundingBox();
     this.currentBoundingSphere = geometry.boundingBox.getBoundingSphere();
-    this.scene.add(particleSystem);
+    this.scene.add(this.particleSystem);
 
     this.animate();
   };
@@ -89,12 +136,6 @@
     camera.position.z = this.currentBoundingSphere.radius / 5;
     camera.lookAt(this.currentBoundingSphere.center);
 
-    // camera.position.x = this.currentBoundingSphere.center.x;
-    // camera.position.y = this.currentBoundingSphere.center.y;
-    // camera.position.z = this.currentBoundingSphere.radius;
-    // camera.lookAt(this.currentBoundingSphere.center);
-    // console.log(this.currentBoundingSphere.center);
-
     renderer.render(this.scene, this.camera);
   };
 
@@ -105,7 +146,7 @@
 
   Mesherator.prototype.showTriangulation = function(triangles) {
     var geometry = new THREE.Geometry();
-    var triangleIndex, triangle, v0, v1, v2, mesh;
+    var triangleIndex, triangle, v0, v1, v2;
 
     for (triangleIndex = 0; triangleIndex < triangles.length; triangleIndex++) {
       triangle = triangles[triangleIndex];
@@ -120,13 +161,16 @@
       geometry.faces.push(new THREE.Face3(triangleIndex * 3, triangleIndex * 3 + 1, triangleIndex * 3 + 2));
     }
 
-    mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+    this.mesh = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial({
       color: 0x00ff00,
-      wireframe: true,
+      wireframe: this.viewWireframe,
       wireframeLineWidth: 1.0
     }));
 
-    this.scene.add(mesh);
+    geometry.computeVertexNormals();
+    geometry.computeFaceNormals();
+
+    this.scene.add(this.mesh);
   };
 
   Mesherator.prototype._jsonPointToVector3 = function(point) {
