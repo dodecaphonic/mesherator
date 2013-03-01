@@ -1,0 +1,87 @@
+#!/bin/bash
+
+MESHERATOR_ROOT="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../"
+TRIANGLE_URL='http://www.netlib.org/voronoi/triangle.zip'
+TRIANGLE_TMP='/tmp/mesherator-triangle'
+SED=`which sed`
+UNZIP=`which unzip`
+MAKE=`which make`
+GCC=`which gcc`
+LD=`which ld`
+
+_macosx()
+{
+    if [ $(uname -s) = Darwin ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+_create_temp_dir()
+{
+    rm -rf $TRIANGLE_TMP
+    mkdir -p $TRIANGLE_TMP
+}
+
+_download_with_curl() {
+    cd $TRIANGLE_TMP
+    $CURL -O $TRIANGLE_URL
+}
+
+_download_with_wget() {
+    cd $TRIANGLE_TMP
+    $WGET $TRIANGLE_URL
+}
+
+_download() {
+    CURL=`which curl`
+    if [ $? -eq 0 ]; then
+        _download_with_curl
+        return
+    fi
+
+    WGET=`which wget`
+    if [ $? -eq 0 ]; then
+        _download_with_wget
+        return
+    fi
+
+    echo "You must have either curl or wget to download the dependencies."
+    exit 1
+}
+
+_compile() {
+    cd $TRIANGLE_TMP
+    $UNZIP triangle.zip
+    SHAREDLIBNAME=""
+
+    $SED -e "21s!CC = .*!CC = $GCC!" -i makefile
+
+    if _macosx; then
+        switches="CSWITCHES = adsadfsd -O -fPIC -I/usr/X11R6/include -L/usr/X11R6/lib"
+        SHAREDLIBNAME="libtriangle.dylib"
+        $SED -e "76s!CSWITCHES = .*!$switches!g" -i makefile
+    else
+        switches="CSWITCHES = -O -DLINUX -fPIC -I\/usr\/X11R6\/include -L\/usr\/X11R6\/lib"
+        SHAREDLIBNAME="libtriangle.so"
+        $SED -i -e "76s!CSWITCHES = .*!$switches!" -i makefile
+    fi
+
+    $MAKE trilibrary
+    $GCC -shared -o $SHAREDLIBNAME triangle.o
+}
+
+_copy_to_deps() {
+    mkdir -p $MESHERATOR_ROOT/deps
+    cp $SHAREDLIBNAME $MESHERATOR_ROOT/deps
+}
+
+
+_create_temp_dir
+_download
+_compile
+_copy_to_deps
+
+echo "You can now have all the fun you deserve with Mesherator."
+

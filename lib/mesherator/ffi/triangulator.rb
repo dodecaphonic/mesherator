@@ -1,16 +1,16 @@
 require 'ffi'
 
 module Mesherator
-  module FFI
-    extend ::FFI::Library
-    ffi_lib 'libtriangle.dylib'
+  module TriangleFFI
+    extend FFI::Library
+    ffi_lib 'libtriangle'
 
     typedef :pointer, :triangulateio
 
     attach_function :triangulate, [:string, :triangulateio, :triangulateio, :triangulateio], :void
     attach_function :trifree, [:pointer], :void
 
-    class TriangulateIO < ::FFI::Struct
+    class TriangulateIO < FFI::Struct
       layout :pointlist, :pointer,
              :pointattributelist, :pointer,
              :pointmarkerlist, :pointer,
@@ -44,7 +44,7 @@ module Mesherator
       end
 
       def triangulate
-        point_array_ptr = ::FFI::MemoryPointer.new(:double, points.size * 2)
+        point_array_ptr = FFI::MemoryPointer.new(:double, points.size * 2)
         point_array_ptr.write_array_of_double(flatten(points))
 
         input  = TriangulateIO.new

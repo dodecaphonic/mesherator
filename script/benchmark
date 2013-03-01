@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/mesherator'
+require 'benchmark'
+
+include Mesherator::TriangleFFI
+
+points = open('public/data/large.txt').readlines.map { |l| Mesherator::Vector3.new(*l.scan(/\d+,\d+/).map { |v| v.sub(',', '.').to_f }) }
+
+Benchmark.bm do |x|
+  x.report do
+    10.times do
+      d = DelaunayTriangulator.new(points)
+      d.triangulate
+    end
+  end
+end

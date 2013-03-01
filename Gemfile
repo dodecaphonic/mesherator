@@ -1,6 +1,7 @@
 source 'http://rubygems.org'
 
 gem 'ffi'
+gem 'sinatra'
 
 group :test do
   gem 'guard'
