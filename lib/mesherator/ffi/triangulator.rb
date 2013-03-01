@@ -85,6 +85,13 @@ module Mesherator
       end
 
       def free(triangulateio_ptr)
+        triangulateio_ptr.members.each do |member|
+          if triangulateio_ptr[member].kind_of?(FFI::Pointer)
+            if member != :pointlist # MemoryPointer takes care of deallocating itself.
+              TriangleFFI.trifree(triangulateio_ptr[member])
+            end
+          end
+        end
       end
     end
   end
