@@ -11,6 +11,5 @@ task benchmark: [:bootstrap] do
 end
 
 task run: [:bootstrap] do
-  ENV['LD_LIBRARY_PATH'] = 'deps'
-  ruby 'mesherator'
+  system 'LD_LIBRARY_PATH=deps bundle exec foreman start'
 end

@@ -59,13 +59,13 @@ _compile() {
     $SED -e "21s!CC = .*!CC = $GCC!" -i makefile
 
     if _macosx; then
-        switches="CSWITCHES = adsadfsd -O -fPIC -I/usr/X11R6/include -L/usr/X11R6/lib"
+        switches="CSWITCHES = -O -fPIC -I/usr/X11R6/include -L/usr/X11R6/lib"
         SHAREDLIBNAME="libtriangle.dylib"
-        $SED -e "76s!CSWITCHES = .*!$switches!g" -i makefile
+        $SED -i -e "76s!CSWITCHES = .*!$switches!g" makefile
     else
         switches="CSWITCHES = -O -DLINUX -fPIC -I\/usr\/X11R6\/include -L\/usr\/X11R6\/lib"
         SHAREDLIBNAME="libtriangle.so"
-        $SED -i -e "76s!CSWITCHES = .*!$switches!" -i makefile
+        $SED -i -e "76s!CSWITCHES = .*!$switches!" makefile
     fi
 
     $MAKE trilibrary
