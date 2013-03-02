@@ -10,7 +10,7 @@ module Mesherator
       @v0 = stub_vector
       @v1 = stub_vector
       @v2 = stub_vector
-      @triangle = Triangle.new(@v0, @v1, @v2, vector_helper: vector)
+      @triangle = Triangle.new(@v0, @v1, @v2, false, vector_helper = vector)
     end
 
     def test_raises_error_on_collinear_vectors
@@ -18,7 +18,7 @@ module Mesherator
       vector.expects(:collinear?).returns true
 
       assert_raises(DegenerateTriangleError) do
-        Triangle.new(stub_vector, stub_vector, stub_vector, vector_helper: vector)
+        Triangle.new(stub_vector, stub_vector, stub_vector, false, vector_helper = vector)
       end
     end
 

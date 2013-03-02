@@ -4,7 +4,7 @@ module Mesherator
   class Triangle
     attr_reader :first_vertex, :second_vertex, :third_vertex
 
-    def initialize(v0, v1, v2, complete = false, vector_helper: Vector3)
+    def initialize(v0, v1, v2, complete = false, vector_helper = Vector3)
       raise DegenerateTriangleError if vector_helper.collinear?(v0, v1, v2)
       @first_vertex = v0
       @second_vertex = v1

@@ -26,7 +26,7 @@ module Mesherator
     end
 
     def setup
-      @triangulation = FFI::DelaunayTriangulator.new(points)
+      @triangulation = TriangleFFI::DelaunayTriangulator.new(points)
     end
 
     def test_performs_triangulation
