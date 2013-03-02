@@ -79,7 +79,7 @@
   };
   
   Mesherator.prototype.loadPointSet = function(numberOfPoints) {
-    numberOfPoints = numberOfPoints || 5000;
+    numberOfPoints = numberOfPoints || 1000;
     this.generateRandomPointSet(numberOfPoints);
     this.showCurrentPointSet();
     this.triangulateCurrentPointSet(this.currentTriangulationMethod);

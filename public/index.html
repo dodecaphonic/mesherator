@@ -12,11 +12,17 @@
 
   <body>
     <div id="controls">
-      <p>Número de pontos: <input type="text" value="5000" id="point-number" name="point-number" /></p>
-      <p><input type="checkbox" id="show-wireframe" name="show-wireframe" checked /> Mostrar wireframe</p>
       <p>
-        <input type="radio" name="method" value="slow" checked /> Ruby
-        <input type="radio" name="method" value="fast" /> Shewchuck
+        <label for="point-number">Número de pontos:</label>
+        <input type="text" value="1000" id="point-number" name="point-number" />
+      </p>
+      <p>
+        <input type="checkbox" id="show-wireframe" name="show-wireframe" checked />
+        <label for="show-wireframe">Mostrar wireframe</label>
+      </p>
+      <p>
+        <input type="radio" name="method" id="slow" value="slow" checked /> <label for="slow">Ruby</label>
+        <input type="radio" name="method" id="fast" value="fast" /> <label for="fast">Shewchuck</label>
       </p>
     </div>
 
